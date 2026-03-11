@@ -30,23 +30,23 @@ export default function Home() {
           </section>
 
           <div className="mt-8 flex flex-col gap-6">
-            <div className="flex items-center gap-3">
-              <div className="relative flex min-h-[56px] flex-1 items-center rounded-full border border-white/25 bg-[rgba(27,97,190,0.95)] px-6 text-sm text-white/80 shadow-[0_30px_60px_rgba(0,0,0,0.65)]">
+            <div className="flex items-center gap-4">
+              <div className="relative flex h-[56px] w-full max-w-[720px] flex-1 items-center rounded-full border border-white/25 bg-[rgba(27,97,190,0.92)] px-7 text-sm text-white/80 shadow-[0_26px_80px_rgba(3,26,77,0.9)]">
                 <button
                   type="button"
-                  className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/40 bg-[rgba(13,76,168,0.9)] text-xs text-white/80"
+                  className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.55)] bg-[rgba(23,86,175,0.9)] text-xs text-white/80"
                 >
-                  <span className="text-[0.55rem] leading-none">●</span>
+                  <span className="text-[0.5rem] leading-none">●</span>
                 </button>
-                <span className="flex-1 truncate text-[0.96rem] text-white/85">
+                <span className="flex-1 truncate text-[0.96rem] text-[rgba(234,244,255,0.96)]">
                   Ask whatever you want
                 </span>
               </div>
               <button
                 type="button"
-                className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#0B4AA2] shadow-[0_26px_60px_rgba(0,0,0,0.7)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_30px_70px_rgba(0,0,0,0.75)]"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-[18px] bg-white text-[#0B4AA2] shadow-[0_24px_60px_rgba(3,26,77,0.9)] transition-transform hover:-translate-y-0.5 hover:shadow-[0_30px_72px_rgba(3,26,77,0.95)]"
               >
-                <span className="text-lg font-semibold leading-none">➜</span>
+                <span className="text-lg font-semibold leading-none">→</span>
               </button>
             </div>
           </div>
