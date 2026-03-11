@@ -1,9 +1,9 @@
 export default function Home() {
   return (
-    <div className="flex min-h-screen items-start justify-center bg-gradient-to-br from-[#0B4AA2] via-[#084196] to-[#02285C] px-6 pb-16 pt-24 font-sans text-white">
+    <div className="flex min-h-screen items-center justify-center bg-[#0B4AA2] px-6 pb-16 pt-16 font-sans text-white">
       <main className="w-full max-w-2xl">
         <div className="flex flex-col gap-12">
-          <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 shadow-[0_14px_35px_rgba(0,0,0,0.45)]">
+          <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 shadow-[0_10px_26px_rgba(0,0,0,0.45)]">
             <svg
               viewBox="0 0 24 24"
               aria-hidden="true"
@@ -17,21 +17,21 @@ export default function Home() {
           </div>
 
           <section className="space-y-3">
-            <h1 className="text-[2.65rem] font-semibold leading-tight tracking-tight">
+            <h1 className="text-[2.5rem] font-semibold leading-tight tracking-tight">
               Hi there!
             </h1>
-            <p className="text-[2.05rem] font-semibold leading-tight tracking-tight">
+            <p className="text-[2rem] font-semibold leading-tight tracking-tight">
               What would you like to know?
             </p>
-            <p className="max-w-xl text-[0.97rem] leading-relaxed text-white/75">
+            <p className="max-w-xl text-[0.97rem] leading-relaxed text-white/80">
               Use one of the most common prompts below or ask your own question
               .
             </p>
           </section>
 
-          <div className="mt-8 flex flex-col gap-6">
+          <div className="mt-10 flex flex-col gap-6">
             <div className="flex items-center gap-4">
-              <div className="relative flex h-[56px] w-full max-w-[720px] flex-1 items-center rounded-full border border-white/25 bg-[rgba(27,97,190,0.92)] px-7 text-sm text-white/80 shadow-[0_26px_80px_rgba(3,26,77,0.9)]">
+              <div className="relative flex h-[56px] w-full max-w-[720px] flex-1 items-center rounded-full border border-white/20 bg-[rgba(21,88,178,0.98)] px-7 text-sm text-white/80 shadow-[0_26px_70px_rgba(3,26,77,0.9)]">
                 <button
                   type="button"
                   className="mr-3 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[rgba(255,255,255,0.55)] bg-[rgba(23,86,175,0.9)] text-xs text-white/80"
