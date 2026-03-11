@@ -30,8 +30,8 @@ export default function Home() {
 
           <div className="mt-10 flex flex-col gap-6">
             <div className="flex items-center">
-              <div className="relative flex h-[46px] w-full max-w-[560px] flex-1 items-center rounded-full border border-[rgba(255,255,255,0.34)] bg-[rgba(13,69,147,0.97)] px-5 text-sm text-[rgba(215,227,246,0.95)] shadow-[0_26px_70px_rgba(0,0,0,0.7)]">
-                <div className="mr-3 flex h-6 w-6 items-center justify-center rounded-full bg-transparent text-[rgba(207,222,244,0.9)]">
+              <div className="relative flex h-11 w-full max-w-[560px] flex-1 items-center rounded-full border border-[rgba(157,189,232,0.75)] bg-[rgba(6,55,126,0.45)] px-4 text-sm text-[rgba(213,227,245,0.95)] shadow-[0_18px_40px_rgba(0,0,0,0.55)]">
+                <div className="mr-3 flex h-7 w-7 items-center justify-center rounded-full border border-[rgba(157,189,232,0.8)] bg-transparent text-[rgba(213,227,245,0.95)]">
                   <svg
                     viewBox="0 0 24 24"
                     aria-hidden="true"
@@ -43,12 +43,12 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <span className="flex-1 truncate text-[0.9rem] text-[rgba(213,227,245,0.96)]">
+                <span className="flex-1 truncate text-[0.9rem] text-[rgba(210,225,245,0.96)]">
                   Ask whatever you want
                 </span>
                 <button
                   type="button"
-                  className="ml-4 flex h-9 w-11 items-center justify-center rounded-[18px] bg-[rgba(26,90,185,0.98)] text-[rgba(226,237,252,0.98)] shadow-[0_20px_46px_rgba(0,0,0,0.8)]"
+                  className="ml-3 flex h-9 w-11 items-center justify-center rounded-[18px] bg-[rgba(24,84,172,0.98)] text-[rgba(226,237,252,0.98)] shadow-[0_16px_32px_rgba(0,0,0,0.65)]"
                 >
                   <span className="text-sm font-semibold leading-none">›</span>
                 </button>
