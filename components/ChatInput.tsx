@@ -17,7 +17,6 @@ const ChatInput: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [hasSent, setHasSent] = useState(false);
   const [hasOpenedResponse, setHasOpenedResponse] = useState(false);
   const [history, setHistory] = useState<
     { question: string; answer: string | null }[]
@@ -71,6 +70,7 @@ const ChatInput: React.FC = () => {
     setError(null);
     setReply(null);
     setHistory((prev) => [...prev, { question: trimmed, answer: null }]);
+    setInput("");
 
     try {
       const res = await fetch("http://localhost:5000/api/chat", {
@@ -98,7 +98,6 @@ const ChatInput: React.FC = () => {
       setError(e.message || "Something went wrong");
     } finally {
       setLoading(false);
-      setHasSent(true);
     }
   }, [input]);
 
@@ -109,18 +108,10 @@ const ChatInput: React.FC = () => {
     }
   };
 
-  const handleClear = useCallback(() => {
-    setInput("");
-    setReply(null);
-    setError(null);
-    setHasSent(false);
-  }, []);
-
   const handleClearHistory = useCallback(() => {
     setHistory([]);
     setReply(null);
     setError(null);
-    setHasSent(false);
     setHasOpenedResponse(false);
     setInput("");
   }, []);
@@ -175,7 +166,6 @@ const ChatInput: React.FC = () => {
     if (!value.trim() && (reply !== null || error !== null)) {
       setReply(null);
       setError(null);
-      setHasSent(false);
     }
   };
 
@@ -228,66 +218,46 @@ const ChatInput: React.FC = () => {
             onKeyDown={handleKeyDown}
           />
 
-          {/* After sending: show Delete (x); otherwise show Send */}
-          {hasSent && hasText ? (
-            <button
-              type="button"
-              onClick={handleClear}
-              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] hover:bg-white/20"
-              aria-label="Clear input and response"
+          {/* Send button */}
+          <button
+            type="button"
+            onClick={handleSend}
+            disabled={loading || !input.trim()}
+            className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 shrink-0 mb-0 min-h-[44px]"
+            aria-label="Send message"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 20 20"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-6 h-6"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-6 h-6"
-              >
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={loading || !input.trim()}
-              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 shrink-0 mb-0 min-h-[44px]"
-              aria-label="Send message"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 20 20"
-                stroke="currentColor"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="w-6 h-6"
-              >
-                <path d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          )}
+              <path d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
 
         {/* Error message */}
-        {error && <p className="text-sm text-red-400">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error + "Try again in a few seconds."}</p>}
       </div>
 
       {/* Right: running history of Q&A */}
       {hasOpenedResponse && (
         <div
-          className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 shadow-lg border border-white/11 animate-rise-up"
+          className="min-h-[200px] lg:min-h-[280px] rounded-2xl shadow-lg border border-white/11 animate-rise-up"
           style={{
-            backgroundColor: "#072E6A",
+            backgroundColor: "#072E6A", 
           }}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3 px-5 py-4" style={{   
+              borderRadius: "15px 15px 0px 0px",
+              borderBottom: "1px solid #1d4c9c70"}}> 
             <span
-              className="text-sm font-medium"
+              className="text-lg font-medium"
               style={{ color: "var(--foreground-subtle)" }}
             >
               Conversation
@@ -295,7 +265,7 @@ const ChatInput: React.FC = () => {
             <button
               type="button"
               onClick={handleClearHistory}
-              className="text-xs px-3 py-1 rounded-full border border-white/25 text-white/90 hover:bg-white/10 transition"
+              className="text-xs text-[14px] px-3 py-1 rounded-full border border-white/25 text-white/90 hover:bg-white/10 transition"
             >
               Clear
             </button>
@@ -303,7 +273,7 @@ const ChatInput: React.FC = () => {
 
           <div
             ref={historyContainerRef}
-            className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll"
+            className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll p-5"
           >
             {history.length === 0 ? (
               <p
