@@ -296,24 +296,27 @@ const ChatInput: React.FC = () => {
               <div className="flex flex-col gap-8">
                 {history.map((entry, index) => (
                   <div key={index} className="flex flex-col gap-4">
-                    {/* Question bubble (left) */}
-                    <div className="flex justify-start">
-                      <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap">
+                    {/* Question (user) on the right, with a subtle bubble */}
+                    <div className="flex justify-end">
+                      <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-right">
                         {entry.question}
                       </div>
                     </div>
 
-                    {/* Answer bubble (right) */}
-                    <div className="flex justify-end">
-                      <div className="inline-block max-w-[80%] rounded-2xl bg-white text-[14px] leading-relaxed text-slate-900 px-4 py-3 whitespace-pre-wrap shadow-sm">
+                    {/* Answer (assistant) on the left, flush with card background */}
+                    <div className="flex justify-start">
+                      <div className="inline-block max-w-[90%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
                         {entry.answer ? (
                           entry.answer
                         ) : index === history.length - 1 && loading ? (
-                          <div className="flex justify-center">
-                            <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span style={{ color: "var(--foreground-subtle)" }}>
+                              Generating response...
+                            </span>
                           </div>
                         ) : (
-                          <span className="text-slate-500">
+                          <span style={{ color: "var(--foreground-subtle)" }}>
                             Waiting for response...
                           </span>
                         )}
