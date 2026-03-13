@@ -32,6 +32,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const historyContainerRef = useRef<HTMLDivElement | null>(null);
   const lastHistoryLengthRef = useRef(0);
+  const lastQuestionRef = useRef<HTMLDivElement | null>(null);
 
   const adjustTextareaHeight = useCallback(() => {
     const ta = textareaRef.current;
@@ -54,13 +55,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }, [input, adjustTextareaHeight]);
 
   useEffect(() => {
-    const container = historyContainerRef.current;
-    if (!container) return;
-
-    // Only auto-scroll when a new question is added,
-    // not when the latest answer arrives.
     if (history.length > lastHistoryLengthRef.current) {
-      container.scrollTop = container.scrollHeight;
+      // A new question was added – scroll so that it appears at the top
+      const questionEl = lastQuestionRef.current;
+      const container = historyContainerRef.current;
+      if (questionEl && container) {
+        const containerRect = container.getBoundingClientRect();
+        const questionRect = questionEl.getBoundingClientRect();
+        const offset = questionRect.top - containerRect.top;
+        container.scrollTop += offset;
+      } else {
+        // Fallback: scroll to top of container
+        container && (container.scrollTop = container.scrollHeight);
+      }
       lastHistoryLengthRef.current = history.length;
     } else {
       lastHistoryLengthRef.current = history.length;
@@ -81,7 +88,6 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setLoading(true);
     setError(null);
     setReply(null);
-    setHistory((prev) => [...prev, { question: trimmed, answer: null }]);
     setInput("");
 
     try {
@@ -99,13 +105,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       const data = await res.json();
       const answer = data.reply ?? "No response from model";
       setReply(answer);
-      setHistory((prev) => {
-        if (!prev.length) return prev;
-        const updated = [...prev];
-        const last = updated[updated.length - 1];
-        updated[updated.length - 1] = { ...last, answer };
-        return updated;
-      });
+      setHistory((prev) => [...prev, { question: trimmed, answer }]);
     } catch (e: any) {
       setError(e.message || "Something went wrong");
     } finally {
@@ -297,7 +297,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
             ) : (
               <div className="flex flex-col gap-8">
                 {history.map((entry, index) => (
-                  <div key={index} className="flex flex-col gap-2">
+                  <div
+                    key={index}
+                    className="flex flex-col gap-2"
+                    ref={index === history.length - 1 ? lastQuestionRef : null}
+                  >
                     {/* Question (user) on the right, with a subtle bubble, left-aligned text */}
                     <div className="flex justify-end">
                       <div className="inline-block max-w-[95%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
