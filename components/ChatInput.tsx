@@ -100,7 +100,8 @@ const ChatInput: React.FC = () => {
 
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
-      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+      // Replace input with latest transcript (no repeated stacking)
+      setInput(transcript);
     };
 
     recognition.onerror = () => {
@@ -117,16 +118,27 @@ const ChatInput: React.FC = () => {
     recognition.start();
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setInput(value);
+    // If user manually clears text, clear reply/error too
+    if (!value.trim() && (reply != null || error != null)) {
+      setReply(null);
+      setError(null);
+    }
+  };
+
+  const hasText = input.trim().length > 0;
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px),1fr] gap-6 lg:gap-8 items-start w-full max-w-6xl align-center">
       {/* Left: input area */}
       <div className="flex flex-col gap-4">
         <div
-          className="flex items-end rounded-2xl pl-3 pr-0 shadow-sm border border-white/11 "
+          className="flex items-end rounded-2xl pl-3 pr-0 shadow-sm border border-white/11"
           style={{ backgroundColor: "#072E6A", alignItems: "center" }}
         >
-          
-          {/* Microphone - colored blue to match send */}
+          {/* Microphone */}
           <button
             type="button"
             onClick={toggleRecording}
@@ -152,31 +164,24 @@ const ChatInput: React.FC = () => {
               <path d="M8 23h8" />
             </svg>
           </button>
+
           <textarea
             ref={textareaRef}
             placeholder="Ask whatever you want"
             rows={MIN_LINES}
             className="flex-1 min-h-[24px] max-h-[192px] bg-transparent outline-none text-white text-base py-3.5 pl-2 placeholder:text-[#A0AEC0] text-[20px] resize-none"
-            style={{ color: "var(--foreground)" }}
+            style={{ color: "var(--foreground-subtle)" }}
             value={input}
-            onChange={(e) => {
-              const value = e.target.value;
-              setInput(value);
-              if (!value.trim() && (reply != null || error != null)) {
-                setReply(null);
-                setError(null);
-              }
-            }}
+            onChange={handleChange}
             onKeyDown={handleKeyDown}
           />
 
-
-          {/* After response: show Delete (x); otherwise show Send */}
-          {reply && !error ? (
+          {/* When there is text: show Delete (x); otherwise show Send */}
+          {hasText ? (
             <button
               type="button"
               onClick={handleClear}
-              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] hover:bg-white/20 text-white" // bg-white/10  border border-white/20
+              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] hover:bg-white/20 text-white"
               aria-label="Clear input and response"
             >
               <svg
@@ -188,6 +193,7 @@ const ChatInput: React.FC = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 className="w-5 h-5"
+                style={{ color: isRecording ? "#fff" : "var(--accent)" }}
               >
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
@@ -198,7 +204,6 @@ const ChatInput: React.FC = () => {
               onClick={handleSend}
               disabled={loading || !input.trim()}
               className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 shrink-0 mb-0 min-h-[44px]"
-              // style={{ backgroundColor: "#1C4C9B" }}
               aria-label="Send message"
             >
               <svg
@@ -217,25 +222,23 @@ const ChatInput: React.FC = () => {
           )}
         </div>
 
-
-        {loading && (
-          <p className="text-sm" style={{ color: "var(--foreground-subtle)" }}>
-            Waiting for response...
-          </p>
-        )}
-
+        {/* Keep error below input */}
         {error && <p className="text-sm text-red-400">{error}</p>}
       </div>
 
       {/* Right: answer box */}
       <div
-        className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 overflow-y-auto response-scroll shadow-lg border border-white/11"
+        className="min-h-[200px] lg:min-h-[280px] max-h-[200px] rounded-2xl p-5 overflow-y-auto response-scroll shadow-lg border border-white/11"
         style={{
           backgroundColor: "#072E6A",
-          color: "var(--foreground-muted)",
+          color: "var(--foreground-subtle)",
         }}
       >
-        {reply && !error ? (
+        {loading ? (
+          <div className="flex items-center justify-center h-full pt-[100px]">
+            <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          </div>
+        ) : reply && !error ? (
           <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
             {reply}
           </p>
