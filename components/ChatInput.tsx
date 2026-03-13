@@ -11,7 +11,13 @@ const MIN_LINES = 1;
 const MAX_LINES = 8;
 const LINE_HEIGHT_PX = 24;
 
-const ChatInput: React.FC = () => {
+interface ChatInputProps {
+  onConversationVisibleChange?: (visible: boolean) => void;
+}
+
+const ChatInput: React.FC<ChatInputProps> = ({
+  onConversationVisibleChange,
+}) => {
   const [input, setInput] = useState("");
   const [reply, setReply] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +66,12 @@ const ChatInput: React.FC = () => {
       lastHistoryLengthRef.current = history.length;
     }
   }, [history]);
+
+  useEffect(() => {
+    if (onConversationVisibleChange) {
+      onConversationVisibleChange(hasOpenedResponse);
+    }
+  }, [hasOpenedResponse, onConversationVisibleChange]);
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
@@ -248,7 +260,7 @@ const ChatInput: React.FC = () => {
       {/* Right: running history of Q&A */}
       {hasOpenedResponse && (
         <div
-          className="min-h-[200px] lg:min-h-[280px] rounded-2xl shadow-lg border border-white/11 animate-rise-up"
+          className="min-h-[200px] lg:min-h-[700px] rounded-2xl shadow-lg border border-white/11 animate-rise-up"
           style={{
             backgroundColor: "#072E6A", 
           }}
@@ -273,7 +285,7 @@ const ChatInput: React.FC = () => {
 
           <div
             ref={historyContainerRef}
-            className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll p-5"
+            className="mr-0.5 pb-1 max-h-[600px] overflow-y-auto response-scroll p-5"
           >
             {history.length === 0 ? (
               <p
@@ -288,14 +300,14 @@ const ChatInput: React.FC = () => {
                   <div key={index} className="flex flex-col gap-2">
                     {/* Question (user) on the right, with a subtle bubble, left-aligned text */}
                     <div className="flex justify-end">
-                      <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
+                      <div className="inline-block max-w-[95%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
                         {entry.question}
                       </div>
                     </div>
 
                     {/* Answer (assistant) on the left, left-aligned text on background */}
                     <div className="flex justify-start">
-                      <div className="inline-block max-w-[80%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
+                      <div className="inline-block max-w-[95%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
                         {entry.answer ? (
                           entry.answer
                         ) : index === history.length - 1 && loading ? (
