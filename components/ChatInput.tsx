@@ -18,6 +18,7 @@ const ChatInput: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [hasSent, setHasSent] = useState(false);
+  const [hasOpenedResponse, setHasOpenedResponse] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -45,6 +46,7 @@ const ChatInput: React.FC = () => {
   const handleSend = useCallback(async () => {
     if (!input.trim()) return;
 
+    setHasOpenedResponse(true);
     setLoading(true);
     setError(null);
     setReply(null);
@@ -238,32 +240,33 @@ const ChatInput: React.FC = () => {
       </div>
 
       {/* Right: answer box */}
-      <div
-        className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 shadow-lg border border-white/11"
-        style={{
-          backgroundColor: "#072E6A",
-          // color: "var(--foreground-subtle)",
-        }}
-      >
-        <div className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll">
-          {loading ? (
-            <div className="flex items-center justify-center h-full pt-[100px]">
-              <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            </div>
-          ) : reply && !error ? (
-            <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
-              {reply}
-            </p>
-          ) : (
-            <p
-              className="text-[15px] leading-relaxed"
-              style={{ color: "var(--foreground-subtle)" }}
-            >
-              Your response will appear here.
-            </p>
-          )}
+      {hasOpenedResponse && (
+        <div
+          className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 shadow-lg border border-white/11 animate-rise-up"
+          style={{
+            backgroundColor: "#072E6A",
+          }}
+        >
+          <div className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll">
+            {loading ? (
+              <div className="flex items-center justify-center h-full pt-[100px]">
+                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              </div>
+            ) : reply && !error ? (
+              <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
+                {reply}
+              </p>
+            ) : (
+              <p
+                className="text-[15px] leading-relaxed"
+                style={{ color: "var(--foreground-subtle)" }}
+              >
+                Your response will appear here.
+              </p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
