@@ -11,8 +11,12 @@ const MIN_LINES = 1;
 const MAX_LINES = 8;
 const LINE_HEIGHT_PX = 24;
 
-const BACKEND_BASE_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+// Minimal ambient types so TypeScript can compile in environments
+// where SpeechRecognition is not defined in the DOM lib.
+type SpeechRecognition = any;
+type SpeechRecognitionEvent = any;
+
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
 
 interface ChatInputProps {
   onConversationVisibleChange?: (visible: boolean) => void;
@@ -270,7 +274,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
       {/* Right: running history of Q&A */}
       {hasOpenedResponse && (
         <div
-          className="min-h-[200px] lg:min-h-[700px] rounded-2xl shadow-lg border border-white/11 animate-rise-up"
+          className="min-h-[700px] rounded-2xl shadow-lg border border-white/11 animate-rise-up"
           style={{
             backgroundColor: "#072E6A", 
           }}
