@@ -293,8 +293,8 @@ const ChatInput: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Answer (assistant) on the right, left-aligned text on background */}
-                    <div className="flex justify-end">
+                    {/* Answer (assistant) on the left, left-aligned text on background */}
+                    <div className="flex justify-start">
                       <div className="inline-block max-w-[80%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
                         {entry.answer ? (
                           entry.answer
