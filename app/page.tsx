@@ -36,7 +36,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="w-full mb-5">
+      <div className="w-full mb-8">
         <ChatInput />
       </div>
 

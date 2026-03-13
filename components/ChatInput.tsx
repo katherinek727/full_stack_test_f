@@ -19,6 +19,9 @@ const ChatInput: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [hasSent, setHasSent] = useState(false);
   const [hasOpenedResponse, setHasOpenedResponse] = useState(false);
+  const [history, setHistory] = useState<
+    { question: string; answer: string | null }[]
+  >([]);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -44,12 +47,14 @@ const ChatInput: React.FC = () => {
   }, [input, adjustTextareaHeight]);
 
   const handleSend = useCallback(async () => {
-    if (!input.trim()) return;
+    const trimmed = input.trim();
+    if (!trimmed) return;
 
     setHasOpenedResponse(true);
     setLoading(true);
     setError(null);
     setReply(null);
+    setHistory((prev) => [...prev, { question: trimmed, answer: null }]);
 
     try {
       const res = await fetch("http://localhost:5000/api/chat", {
@@ -64,7 +69,15 @@ const ChatInput: React.FC = () => {
       }
 
       const data = await res.json();
-      setReply(data.reply ?? "No response from model");
+      const answer = data.reply ?? "No response from model";
+      setReply(answer);
+      setHistory((prev) => {
+        if (!prev.length) return prev;
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        updated[updated.length - 1] = { ...last, answer };
+        return updated;
+      });
     } catch (e: any) {
       setError(e.message || "Something went wrong");
     } finally {
@@ -239,7 +252,7 @@ const ChatInput: React.FC = () => {
         {error && <p className="text-sm text-red-400">{error}</p>}
       </div>
 
-      {/* Right: answer box */}
+      {/* Right: running history of Q&A */}
       {hasOpenedResponse && (
         <div
           className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 shadow-lg border border-white/11 animate-rise-up"
@@ -248,21 +261,41 @@ const ChatInput: React.FC = () => {
           }}
         >
           <div className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll">
-            {loading ? (
-              <div className="flex items-center justify-center h-full pt-[100px]">
-                <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              </div>
-            ) : reply && !error ? (
-              <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
-                {reply}
-              </p>
-            ) : (
+            {history.length === 0 ? (
               <p
                 className="text-[15px] leading-relaxed"
                 style={{ color: "var(--foreground-subtle)" }}
               >
-                Your response will appear here.
+                Your conversation will appear here.
               </p>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {history.map((entry, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-row gap-6 items-start"
+                  >
+                    <div className="w-1/2 text-left text-[15px] leading-relaxed whitespace-pre-wrap text-white/90">
+                      {entry.question}
+                    </div>
+                    <div className="w-1/2 text-right text-[15px] leading-relaxed whitespace-pre-wrap">
+                      {entry.answer ? (
+                        entry.answer
+                      ) : index === history.length - 1 && loading ? (
+                        <div className="flex justify-end">
+                          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        </div>
+                      ) : (
+                        <span
+                          style={{ color: "var(--foreground-subtle)" }}
+                        >
+                          Waiting for response...
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </div>
