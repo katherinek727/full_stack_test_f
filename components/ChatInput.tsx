@@ -11,6 +11,9 @@ const MIN_LINES = 1;
 const MAX_LINES = 8;
 const LINE_HEIGHT_PX = 24;
 
+const BACKEND_BASE_URL =
+  process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+
 interface ChatInputProps {
   onConversationVisibleChange?: (visible: boolean) => void;
 }
@@ -31,8 +34,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const historyContainerRef = useRef<HTMLDivElement | null>(null);
-  const lastHistoryLengthRef = useRef(0);
-  const lastQuestionRef = useRef<HTMLDivElement | null>(null);
+  const lastItemRef = useRef<HTMLDivElement | null>(null);
 
   const adjustTextareaHeight = useCallback(() => {
     const ta = textareaRef.current;
@@ -55,24 +57,17 @@ const ChatInput: React.FC<ChatInputProps> = ({
   }, [input, adjustTextareaHeight]);
 
   useEffect(() => {
-    if (history.length > lastHistoryLengthRef.current) {
-      // A new question was added – if scrolling is possible,
-      // position that last question at the very top of the viewport.
-      const questionEl = lastQuestionRef.current;
-      const container = historyContainerRef.current;
+    const container = historyContainerRef.current;
+    const lastEl = lastItemRef.current;
+    if (!container || !lastEl || history.length === 0) return;
 
-      if (questionEl && container) {
-        const needsScroll = container.scrollHeight > container.clientHeight;
-        if (needsScroll) {
-          const offsetTop = questionEl.offsetTop - container.offsetTop;
-          container.scrollTop = offsetTop;
-        }
-      }
+    const needsScroll = container.scrollHeight > container.clientHeight;
+    if (!needsScroll) return;
 
-      lastHistoryLengthRef.current = history.length;
-    } else {
-      lastHistoryLengthRef.current = history.length;
-    }
+    // Position the last question/answer pair so its top
+    // aligns with the top of the scroll container.
+    const offsetTop = lastEl.offsetTop - container.offsetTop;
+    container.scrollTop = offsetTop;
   }, [history]);
 
   useEffect(() => {
@@ -89,13 +84,9 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setLoading(true);
     setError(null);
     setReply(null);
-    setInput("");
-
-    // Tentatively add the question with no answer yet
-    setHistory((prev) => [...prev, { question: trimmed, answer: null }]);
 
     try {
-      const res = await fetch("http://localhost:5000/api/chat", {
+      const res = await fetch(`${BACKEND_BASE_URL}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed }),
@@ -110,30 +101,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
       const answer = data.reply ?? "No response from model";
       setReply(answer);
 
-      // Fill in the answer for the last question
-      setHistory((prev) => {
-        if (!prev.length) return prev;
-        const updated = [...prev];
-        const lastIndex = updated.length - 1;
-        const last = updated[lastIndex];
-        if (last.answer === null && last.question === trimmed) {
-          updated[lastIndex] = { ...last, answer };
-        }
-        return updated;
-      });
-    } catch (e: any) {
-      setError(e.message || "Something went wrong");
+      // Only add to history on success
+      setHistory((prev) => [...prev, { question: trimmed, answer }]);
 
-      // Remove the tentative question from history on error
-      setHistory((prev) => {
-        if (!prev.length) return prev;
-        const updated = [...prev];
-        const last = updated[updated.length - 1];
-        if (last.answer === null && last.question === trimmed) {
-          updated.pop();
-        }
-        return updated;
-      });
+      // Clear input only after a successful response
+      setInput("");
+    } catch (e: any) {
+      // On error, keep the input value and do not touch history
+      setError(e.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -281,6 +256,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
         {/* Error message */}
         {error && <p className="text-sm text-red-400">{error + "Try again in a few seconds."}</p>}
+        {/* Global loading indicator shown on every send while awaiting a response */}
+        {loading && (
+            <div className="flex items-center gap-2 mb-4">
+              <span style={{ color: "var(--foreground-subtle)" }}>
+                Generating response...
+              </span>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
       </div>
 
       {/* Right: running history of Q&A */}
@@ -313,20 +297,24 @@ const ChatInput: React.FC<ChatInputProps> = ({
             ref={historyContainerRef}
             className="mr-0.5 pb-1 max-h-[600px] overflow-y-auto response-scroll p-5"
           >
+          
+
             {history.length === 0 ? (
-              <p
-                className="text-[15px] leading-relaxed"
-                style={{ color: "var(--foreground-subtle)" }}
-              >
-                Your conversation will appear here.
-              </p>
+              !loading && (
+                <p
+                  className="text-[15px] leading-relaxed"
+                  style={{ color: "var(--foreground-subtle)" }}
+                >
+                  Your conversation will appear here.
+                </p>
+              )
             ) : (
               <div className="flex flex-col gap-8">
                 {history.map((entry, index) => (
                   <div
                     key={index}
+                    ref={index === history.length - 1 ? lastItemRef : null}
                     className="flex flex-col gap-2"
-                    ref={index === history.length - 1 ? lastQuestionRef : null}
                   >
                     {/* Question (user) on the right, with a subtle bubble, left-aligned text */}
                     <div className="flex justify-end">
@@ -338,22 +326,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
                     {/* Answer (assistant) on the left, left-aligned text on background */}
                     <div className="flex justify-start">
                       <div className="inline-block max-w-[95%] text-[14px] leading-relaxed text-white/90 text-left">
-                        {entry.answer ? (
+                        {entry.answer && (
                           <span
                             className="block whitespace-pre-wrap"
                             dangerouslySetInnerHTML={{ __html: entry.answer }}
                           />
-                        ) : index === history.length - 1 && loading ? (
-                          <div className="flex items-center justify-end gap-2">
-                            <span style={{ color: "var(--foreground-subtle)" }}>
-                              Generating response...
-                            </span>
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                          </div>
-                        ) : (
-                          <span style={{ color: "var(--foreground-subtle)" }}>
-                            Waiting for response...
-                          </span>
                         )}
                       </div>
                     </div>
