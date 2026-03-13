@@ -90,11 +90,14 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setReply(null);
     setInput("");
 
+    // Tentatively add the question with no answer yet
+    setHistory((prev) => [...prev, { question: trimmed, answer: null }]);
+
     try {
       const res = await fetch("http://localhost:5000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input.trim() }),
+        body: JSON.stringify({ message: trimmed }),
       });
 
       if (!res.ok) {
@@ -105,9 +108,31 @@ const ChatInput: React.FC<ChatInputProps> = ({
       const data = await res.json();
       const answer = data.reply ?? "No response from model";
       setReply(answer);
-      setHistory((prev) => [...prev, { question: trimmed, answer }]);
+
+      // Fill in the answer for the last question
+      setHistory((prev) => {
+        if (!prev.length) return prev;
+        const updated = [...prev];
+        const lastIndex = updated.length - 1;
+        const last = updated[lastIndex];
+        if (last.answer === null && last.question === trimmed) {
+          updated[lastIndex] = { ...last, answer };
+        }
+        return updated;
+      });
     } catch (e: any) {
       setError(e.message || "Something went wrong");
+
+      // Remove the tentative question from history on error
+      setHistory((prev) => {
+        if (!prev.length) return prev;
+        const updated = [...prev];
+        const last = updated[updated.length - 1];
+        if (last.answer === null && last.question === trimmed) {
+          updated.pop();
+        }
+        return updated;
+      });
     } finally {
       setLoading(false);
     }
@@ -311,9 +336,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
                     {/* Answer (assistant) on the left, left-aligned text on background */}
                     <div className="flex justify-start">
-                      <div className="inline-block max-w-[95%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
+                      <div className="inline-block max-w-[95%] text-[14px] leading-relaxed text-white/90 text-left">
                         {entry.answer ? (
-                          entry.answer
+                          <span
+                            className="block whitespace-pre-wrap"
+                            dangerouslySetInnerHTML={{ __html: entry.answer }}
+                          />
                         ) : index === history.length - 1 && loading ? (
                           <div className="flex items-center justify-end gap-2">
                             <span style={{ color: "var(--foreground-subtle)" }}>
