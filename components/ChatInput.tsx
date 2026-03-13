@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useCallback, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 const MIN_LINES = 1;
 const MAX_LINES = 8;
@@ -13,19 +18,23 @@ const ChatInput: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
-  const recognitionRef = useRef<any | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const adjustTextareaHeight = useCallback(() => {
     const ta = textareaRef.current;
     if (!ta) return;
+
     ta.style.height = "auto";
+
     const capped = Math.min(
       Math.max(ta.scrollHeight, MIN_LINES * LINE_HEIGHT_PX),
-      MAX_LINES * LINE_HEIGHT_PX
+      MAX_LINES * LINE_HEIGHT_PX,
     );
+
     ta.style.height = `${capped}px`;
-    ta.style.overflowY = capped >= MAX_LINES * LINE_HEIGHT_PX ? "auto" : "hidden";
+    ta.style.overflowY =
+      capped >= MAX_LINES * LINE_HEIGHT_PX ? "auto" : "hidden";
   }, []);
 
   useEffect(() => {
@@ -33,9 +42,7 @@ const ChatInput: React.FC = () => {
   }, [input, adjustTextareaHeight]);
 
   const handleSend = useCallback(async () => {
-    if (!input.trim()) {
-      return;
-    }
+    if (!input.trim()) return;
 
     setLoading(true);
     setError(null);
@@ -44,9 +51,7 @@ const ChatInput: React.FC = () => {
     try {
       const res = await fetch("http://localhost:5000/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input.trim() }),
       });
 
@@ -80,10 +85,11 @@ const ChatInput: React.FC = () => {
   const toggleRecording = () => {
     if (typeof window === "undefined") return;
 
-    const SpeechRecognition =
-      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognitionImpl =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
 
-    if (!SpeechRecognition) {
+    if (!SpeechRecognitionImpl) {
       setError("Your browser does not support speech recognition.");
       return;
     }
@@ -93,14 +99,14 @@ const ChatInput: React.FC = () => {
       return;
     }
 
-    const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognitionImpl() as SpeechRecognition;
     recognition.lang = "en-US";
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[0][0].transcript;
-      // Replace input with latest transcript (no repeated stacking)
+      // Replace input with latest transcript (no stacking)
       setInput(transcript);
     };
 
@@ -121,8 +127,9 @@ const ChatInput: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     setInput(value);
-    // If user manually clears text, clear reply/error too
-    if (!value.trim() && (reply != null || error != null)) {
+
+    // If the user clears the text, also clear reply and error
+    if (!value.trim() && (reply !== null || error !== null)) {
       setReply(null);
       setError(null);
     }
@@ -131,12 +138,12 @@ const ChatInput: React.FC = () => {
   const hasText = input.trim().length > 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px),1fr] gap-6 lg:gap-8 items-start w-full max-w-6xl align-center">
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px),1fr] gap-6 lg:gap-8 items-start w-full max-w-6xl">
       {/* Left: input area */}
       <div className="flex flex-col gap-4">
         <div
           className="flex items-end rounded-2xl pl-3 pr-0 shadow-sm border border-white/11"
-          style={{ backgroundColor: "#072E6A", alignItems: "center" }}
+          style={{ backgroundColor: "#072E6A" }}
         >
           {/* Microphone */}
           <button
@@ -152,7 +159,7 @@ const ChatInput: React.FC = () => {
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth={2}
               strokeLinecap="round"
               strokeLinejoin="round"
               className="w-7 h-7 shrink-0"
@@ -165,6 +172,7 @@ const ChatInput: React.FC = () => {
             </svg>
           </button>
 
+          {/* Text input */}
           <textarea
             ref={textareaRef}
             placeholder="Ask whatever you want"
@@ -181,19 +189,18 @@ const ChatInput: React.FC = () => {
             <button
               type="button"
               onClick={handleClear}
-              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] hover:bg-white/20 text-white"
+              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] hover:bg-white/20"
               aria-label="Clear input and response"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
+                viewBox="0 0 20 20"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-5 h-5"
-                style={{ color: isRecording ? "#fff" : "var(--accent)" }}
+                className="w-6 h-6"
               >
                 <path d="M18 6L6 18M6 6l12 12" />
               </svg>
@@ -211,18 +218,18 @@ const ChatInput: React.FC = () => {
                 fill="none"
                 viewBox="0 0 20 20"
                 stroke="currentColor"
-                strokeWidth="2"
+                strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="w-6 h-6 text-white"
+                className="w-6 h-6"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                <path d="M9 5l7 7-7 7" />
               </svg>
             </button>
           )}
         </div>
 
-        {/* Keep error below input */}
+        {/* Error message */}
         {error && <p className="text-sm text-red-400">{error}</p>}
       </div>
 
@@ -235,7 +242,7 @@ const ChatInput: React.FC = () => {
         }}
       >
         {loading ? (
-          <div className="flex items-center justify-center h-full pt-[100px]">
+          <div className="flex items-center justify-center h-full pt-24">
             <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           </div>
         ) : reply && !error ? (
@@ -243,10 +250,7 @@ const ChatInput: React.FC = () => {
             {reply}
           </p>
         ) : (
-          <p
-            className="text-[15px] leading-relaxed"
-            style={{ color: "var(--foreground-subtle)" }}
-          >
+          <p className="text-[15px] leading-relaxed">
             Your response will appear here.
           </p>
         )}

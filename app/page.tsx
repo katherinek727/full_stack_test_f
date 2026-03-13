@@ -4,7 +4,7 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col justify-between px-8 sm:px-16 md:px-24 lg:px-40 py-12 md:py-20 bg-[#072E6A]">
       <div>
-        {/* Chat icon - light blue circle */}
+        {/* Chat icon */}
         <div
           className="w-12 h-12 rounded-[10px] flex items-center justify-center mb-6 text-white"
           style={{ backgroundColor: "#1D4C9C" }}
@@ -12,7 +12,7 @@ export default function Home() {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            className="w-6 h-6 text-white"
+            className="w-6 h-6"
             fill="currentColor"
           >
             <path d="M12 3C6.486 3 2 6.589 2 11c0 2.066.877 3.96 2.32 5.416L3 21l4.717-1.32C9.062 20.573 10.5 21 12 21c5.514 0 10-3.589 10-9s-4.486-9-10-9z" />
@@ -36,7 +36,7 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="w-full mt-[65px]">
+      <div className="w-full mt-16">
         <ChatInput />
       </div>
 
@@ -51,7 +51,7 @@ export default function Home() {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
             className="w-4 h-4 shrink-0"
@@ -61,11 +61,17 @@ export default function Home() {
           </svg>
           Powered by ChatGPT API
         </span>
-        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>•</span>
+        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>
+          •
+        </span>
         <span style={{ color: "var(--foreground-subtle)" }}>Fast</span>
-        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>•</span>
+        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>
+          •
+        </span>
         <span style={{ color: "var(--foreground-subtle)" }}>Secure</span>
-        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>•</span>
+        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>
+          •
+        </span>
         <span style={{ color: "var(--foreground-subtle)" }}>Accurate</span>
       </footer>
     </div>
