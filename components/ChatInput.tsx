@@ -84,6 +84,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const trimmed = input.trim();
     if (!trimmed) return;
 
+    if (!BACKEND_BASE_URL) {
+      setError("Backend URL is not set. Add NEXT_PUBLIC_BACKEND_URL to .env or .env.local.");
+      return;
+    }
+
     setHasOpenedResponse(true);
     setLoading(true);
     setError(null);
@@ -111,8 +116,18 @@ const ChatInput: React.FC<ChatInputProps> = ({
       // Clear input only after a successful response
       setInput("");
     } catch (e: any) {
-      // On error, keep the input value and do not touch history
-      setError(e.message || "Something went wrong");
+      const msg = e?.message ?? "Something went wrong";
+      const isConnectionError =
+        typeof msg === "string" &&
+        (msg.includes("Failed to fetch") ||
+          msg.includes("NetworkError") ||
+          msg.includes("Load failed") ||
+          msg.toLowerCase().includes("network"));
+      setError(
+        isConnectionError
+          ? "Connection error. Check that the backend is running and CORS is enabled, then try again in a few seconds."
+          : msg
+      );
     } finally {
       setLoading(false);
     }
@@ -258,8 +273,15 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </button>
         </div>
 
-        {/* Error message */}
-        {error && <p className="text-sm text-red-400">{error + "Try again in a few seconds."}</p>}
+        {/* Error message - only append "Try again" for connection/network errors */}
+        {error && (
+          <p className="text-sm text-red-400">
+            {error}
+            {(error.includes("Connection error") || error.includes("Failed to fetch") || error.includes("NetworkError"))
+              ? " Try again in a few seconds."
+              : ""}
+          </p>
+        )}
         {/* Global loading indicator shown on every send while awaiting a response */}
         {loading && (
             <div className="flex items-center gap-2 mb-4">
