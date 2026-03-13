@@ -316,16 +316,16 @@ const ChatInput: React.FC = () => {
               <div className="flex flex-col gap-8">
                 {history.map((entry, index) => (
                   <div key={index} className="flex flex-col gap-2">
-                    {/* Question (user) on the right, with a subtle bubble */}
+                    {/* Question (user) on the right, with a subtle bubble, left-aligned text */}
                     <div className="flex justify-end">
-                      <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-right">
+                      <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
                         {entry.question}
                       </div>
                     </div>
 
-                    {/* Answer (assistant) on the right, text directly on background */}
+                    {/* Answer (assistant) on the right, left-aligned text on background */}
                     <div className="flex justify-end">
-                      <div className="inline-block max-w-[80%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-right">
+                      <div className="inline-block max-w-[80%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
                         {entry.answer ? (
                           entry.answer
                         ) : index === history.length - 1 && loading ? (
