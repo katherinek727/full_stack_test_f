@@ -16,7 +16,17 @@ const LINE_HEIGHT_PX = 24;
 type SpeechRecognition = any;
 type SpeechRecognitionEvent = any;
 
-const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+const RAW_BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL ?? "";
+
+function getBackendBaseUrl(): string {
+  const trimmed = RAW_BACKEND_BASE_URL.trim().replace(/\/+$/, "");
+  if (!trimmed) return "";
+  if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+    return trimmed;
+  }
+  // Default to https if protocol is missing
+  return `https://${trimmed}`;
+}
 
 interface ChatInputProps {
   onConversationVisibleChange?: (visible: boolean) => void;
@@ -84,8 +94,11 @@ const ChatInput: React.FC<ChatInputProps> = ({
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    if (!BACKEND_BASE_URL) {
-      setError("Backend URL is not set. Add NEXT_PUBLIC_BACKEND_URL to .env or .env.local.");
+    const backendBaseUrl = getBackendBaseUrl();
+    if (!backendBaseUrl) {
+      setError(
+        'Backend URL is not set. Add NEXT_PUBLIC_BACKEND_URL to .env or .env.local (e.g. "https://full-stack-test-b-myzn.vercel.app").',
+      );
       return;
     }
 
@@ -95,7 +108,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     setReply(null);
 
     try {
-      const res = await fetch(`${BACKEND_BASE_URL}/api/chat`, {
+      const res = await fetch(`${backendBaseUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: trimmed }),
