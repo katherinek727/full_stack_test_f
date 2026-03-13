@@ -56,18 +56,19 @@ const ChatInput: React.FC<ChatInputProps> = ({
 
   useEffect(() => {
     if (history.length > lastHistoryLengthRef.current) {
-      // A new question was added – scroll so that it appears at the top
+      // A new question was added – if scrolling is possible,
+      // position that last question at the very top of the viewport.
       const questionEl = lastQuestionRef.current;
       const container = historyContainerRef.current;
+
       if (questionEl && container) {
-        const containerRect = container.getBoundingClientRect();
-        const questionRect = questionEl.getBoundingClientRect();
-        const offset = questionRect.top - containerRect.top;
-        container.scrollTop += offset;
-      } else {
-        // Fallback: scroll to top of container
-        container && (container.scrollTop = container.scrollHeight);
+        const needsScroll = container.scrollHeight > container.clientHeight;
+        if (needsScroll) {
+          const offsetTop = questionEl.offsetTop - container.offsetTop;
+          container.scrollTop = offsetTop;
+        }
       }
+
       lastHistoryLengthRef.current = history.length;
     } else {
       lastHistoryLengthRef.current = history.length;
