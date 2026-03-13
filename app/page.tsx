@@ -2,7 +2,7 @@ import ChatInput from "../components/ChatInput";
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex flex-col justify-between px-8 sm:px-16 md:px-24 lg:px-40 py-12 md:py-20 bg-[#072E6A]">
+    <div className="min-h-screen flex flex-col justify-between px-8 sm:px-16 md:px-24 lg:px-40 py-2 md:pt-20 bg-[#072E6A]">
       <div>
         {/* Chat icon - light blue circle */}
         <div
