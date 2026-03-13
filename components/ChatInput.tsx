@@ -26,6 +26,7 @@ const ChatInput: React.FC = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const historyContainerRef = useRef<HTMLDivElement | null>(null);
+  const lastHistoryLengthRef = useRef(0);
 
   const adjustTextareaHeight = useCallback(() => {
     const ta = textareaRef.current;
@@ -50,8 +51,16 @@ const ChatInput: React.FC = () => {
   useEffect(() => {
     const container = historyContainerRef.current;
     if (!container) return;
-    container.scrollTop = container.scrollHeight;
-  }, [history, loading]);
+
+    // Only auto-scroll when a new question is added,
+    // not when the latest answer arrives.
+    if (history.length > lastHistoryLengthRef.current) {
+      container.scrollTop = container.scrollHeight;
+      lastHistoryLengthRef.current = history.length;
+    } else {
+      lastHistoryLengthRef.current = history.length;
+    }
+  }, [history]);
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
@@ -113,6 +122,7 @@ const ChatInput: React.FC = () => {
     setError(null);
     setHasSent(false);
     setHasOpenedResponse(false);
+    setInput("");
   }, []);
 
   const toggleRecording = () => {
@@ -305,7 +315,7 @@ const ChatInput: React.FC = () => {
             ) : (
               <div className="flex flex-col gap-8">
                 {history.map((entry, index) => (
-                  <div key={index} className="flex flex-col gap-4">
+                  <div key={index} className="flex flex-col gap-2">
                     {/* Question (user) on the right, with a subtle bubble */}
                     <div className="flex justify-end">
                       <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-right">
@@ -313,17 +323,17 @@ const ChatInput: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Answer (assistant) on the left, flush with card background */}
-                    <div className="flex justify-start">
-                      <div className="inline-block max-w-[90%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-left">
+                    {/* Answer (assistant) on the right, text directly on background */}
+                    <div className="flex justify-end">
+                      <div className="inline-block max-w-[80%] text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap text-right">
                         {entry.answer ? (
                           entry.answer
                         ) : index === history.length - 1 && loading ? (
-                          <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          <div className="flex items-center justify-end gap-2">
                             <span style={{ color: "var(--foreground-subtle)" }}>
                               Generating response...
                             </span>
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           </div>
                         ) : (
                           <span style={{ color: "var(--foreground-subtle)" }}>
