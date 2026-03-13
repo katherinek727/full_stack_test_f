@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useRef, useState, useEffect } from "react";
+
+const MIN_LINES = 1;
+const MAX_LINES = 8;
+const LINE_HEIGHT_PX = 24;
 
 const ChatInput: React.FC = () => {
   const [input, setInput] = useState("");
@@ -10,6 +14,23 @@ const ChatInput: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
 
   const recognitionRef = useRef<any | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const adjustTextareaHeight = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const capped = Math.min(
+      Math.max(ta.scrollHeight, MIN_LINES * LINE_HEIGHT_PX),
+      MAX_LINES * LINE_HEIGHT_PX
+    );
+    ta.style.height = `${capped}px`;
+    ta.style.overflowY = capped >= MAX_LINES * LINE_HEIGHT_PX ? "auto" : "hidden";
+  }, []);
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [input, adjustTextareaHeight]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim()) {
@@ -43,12 +64,18 @@ const ChatInput: React.FC = () => {
     }
   }, [input]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
+
+  const handleClear = useCallback(() => {
+    setInput("");
+    setReply(null);
+    setError(null);
+  }, []);
 
   const toggleRecording = () => {
     if (typeof window === "undefined") return;
@@ -91,85 +118,136 @@ const ChatInput: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-[600px]">
-      <div className="flex items-center bg-[#072E6A] border border-[#153E83] border-[3px] rounded-[17px] pl-4 shadow-md">
-        <button
-          type="button"
-          onClick={toggleRecording}
-          className={`flex items-center justify-center rounded-full p-2 transition ${
-            isRecording ? "bg-red-600" : "bg-transparent hover:bg-[#0b3b80]"
-          }`}
-          aria-label="Toggle voice input"
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,420px),1fr] gap-6 lg:gap-8 items-start w-full max-w-6xl align-center">
+      {/* Left: input area */}
+      <div className="flex flex-col gap-4">
+        <div
+          className="flex items-end rounded-2xl pl-3 pr-0 shadow-sm border border-white/11 "
+          style={{ backgroundColor: "#072E6A", alignItems: "center" }}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-7 h-11 text-[#2356A9]"
-            fill="#1D4D9B"
-            viewBox="0 0 20 20"
-            stroke="currentColor"
-            strokeWidth="2"
+          
+          {/* Microphone - colored blue to match send */}
+          <button
+            type="button"
+            onClick={toggleRecording}
+            className={`flex items-center justify-center rounded-full p-2.5 transition shrink-0 mb-1 ${
+              isRecording ? "bg-red-500/90" : "bg-[#072E6A] hover:bg-white/5"
+            }`}
+            aria-label="Toggle voice input"
           >
-            <path
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              d="M12 1.5a3.375 3.375 0 00-3.375 3.375v6.75A3.375 3.375 0 0012 15a3.375 3.375 0 003.375-3.375V4.875A3.375 3.375 0 0012 1.5z"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M19.125 11.25H18a6 6 0 01-12 0H4.875"
-            />
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 18v4.5m-4.5-1.125h9"
-            />
-          </svg>
-        </button>
+              className="w-7 h-7 shrink-0"
+              style={{ color: isRecording ? "#fff" : "var(--accent)" }}
+            >
+              <path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <path d="M12 19v4" />
+              <path d="M8 23h8" />
+            </svg>
+          </button>
+          <textarea
+            ref={textareaRef}
+            placeholder="Ask whatever you want"
+            rows={MIN_LINES}
+            className="flex-1 min-h-[24px] max-h-[192px] bg-transparent outline-none text-white text-base py-3.5 pl-2 placeholder:text-[#A0AEC0] text-[20px] resize-none"
+            style={{ color: "var(--foreground)" }}
+            value={input}
+            onChange={(e) => {
+              const value = e.target.value;
+              setInput(value);
+              if (!value.trim() && (reply != null || error != null)) {
+                setReply(null);
+                setError(null);
+              }
+            }}
+            onKeyDown={handleKeyDown}
+          />
 
-        <input
-          placeholder="Ask whatever you want"
-          className="flex-1 bg-transparent outline-none text-[#ACC0DB] text-[20px] placeholder-[#9bb8e0] text-sm pl-5"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
 
-        <button
-          type="button"
-          onClick={handleSend}
-          disabled={loading || !input.trim()}
-          className="ml-3 bg-[#1D4D9B] hover:bg-[#225fb6] disabled:opacity-60 disabled:cursor-not-allowed transition rounded-[15px] p-4 flex items-center justify-center"
-          aria-label="Send message"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-            className="w-7 h-7 text-white"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+          {/* After response: show Delete (x); otherwise show Send */}
+          {reply && !error ? (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] bg-white/10 hover:bg-white/20 text-white border border-white/20"
+              aria-label="Clear input and response"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-5 h-5"
+              >
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={loading || !input.trim()}
+              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 shrink-0 mb-0 min-h-[44px]"
+              style={{ backgroundColor: "#1C4C9B" }}
+              aria-label="Send message"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 20 20"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-6 h-6 text-white"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+        </div>
+
+
+        {loading && (
+          <p className="text-sm" style={{ color: "var(--foreground-subtle)" }}>
+            Waiting for response...
+          </p>
+        )}
+
+        {error && <p className="text-sm text-red-400">{error}</p>}
       </div>
 
-      {loading && (
-        <div className="text-sm text-[#ACC0DB]">Waiting for response...</div>
-      )}
-
-      {error && (
-        <div className="text-sm text-red-400">
-          {error}
-        </div>
-      )}
-
-      {reply && !error && (
-        <div className="mt-1 rounded-xl bg-[#0a3a7a] text-[#e2ecff] text-sm p-3 max-h-60 overflow-y-auto">
-          {reply}
-        </div>
-      )}
+      {/* Right: answer box */}
+      <div
+        className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 overflow-y-auto response-scroll shadow-lg border border-white/11"
+        style={{
+          backgroundColor: "#072E6A",
+          color: "var(--foreground-muted)",
+        }}
+      >
+        {reply && !error ? (
+          <p className="text-[15px] leading-relaxed whitespace-pre-wrap">
+            {reply}
+          </p>
+        ) : (
+          <p
+            className="text-[15px] leading-relaxed"
+            style={{ color: "var(--foreground-subtle)" }}
+          >
+            Your response will appear here.
+          </p>
+        )}
+      </div>
     </div>
   );
 };
