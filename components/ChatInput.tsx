@@ -100,6 +100,14 @@ const ChatInput: React.FC = () => {
     setHasSent(false);
   }, []);
 
+  const handleClearHistory = useCallback(() => {
+    setHistory([]);
+    setReply(null);
+    setError(null);
+    setHasSent(false);
+    setHasOpenedResponse(false);
+  }, []);
+
   const toggleRecording = () => {
     if (typeof window === "undefined") return;
 
@@ -260,6 +268,22 @@ const ChatInput: React.FC = () => {
             backgroundColor: "#072E6A",
           }}
         >
+          <div className="flex items-center justify-between mb-3">
+            <span
+              className="text-sm font-medium"
+              style={{ color: "var(--foreground-subtle)" }}
+            >
+              Conversation
+            </span>
+            <button
+              type="button"
+              onClick={handleClearHistory}
+              className="text-xs px-3 py-1 rounded-full border border-white/25 text-white/90 hover:bg-white/10 transition"
+            >
+              Clear
+            </button>
+          </div>
+
           <div className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll">
             {history.length === 0 ? (
               <p
@@ -269,29 +293,31 @@ const ChatInput: React.FC = () => {
                 Your conversation will appear here.
               </p>
             ) : (
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-8">
                 {history.map((entry, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-row gap-6 items-start"
-                  >
-                    <div className="w-1/2 text-left text-[15px] leading-relaxed whitespace-pre-wrap text-white/90">
-                      {entry.question}
+                  <div key={index} className="flex flex-col gap-4">
+                    {/* Question bubble (left) */}
+                    <div className="flex justify-start">
+                      <div className="inline-block max-w-[80%] rounded-2xl bg-white/5 px-4 py-3 text-[14px] leading-relaxed text-white/90 whitespace-pre-wrap">
+                        {entry.question}
+                      </div>
                     </div>
-                    <div className="w-1/2 text-right text-[15px] leading-relaxed whitespace-pre-wrap">
-                      {entry.answer ? (
-                        entry.answer
-                      ) : index === history.length - 1 && loading ? (
-                        <div className="flex justify-end">
-                          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        </div>
-                      ) : (
-                        <span
-                          style={{ color: "var(--foreground-subtle)" }}
-                        >
-                          Waiting for response...
-                        </span>
-                      )}
+
+                    {/* Answer bubble (right) */}
+                    <div className="flex justify-end">
+                      <div className="inline-block max-w-[80%] rounded-2xl bg-white text-[14px] leading-relaxed text-slate-900 px-4 py-3 whitespace-pre-wrap shadow-sm">
+                        {entry.answer ? (
+                          entry.answer
+                        ) : index === history.length - 1 && loading ? (
+                          <div className="flex justify-center">
+                            <div className="w-5 h-5 border-2 border-slate-300 border-t-slate-500 rounded-full animate-spin" />
+                          </div>
+                        ) : (
+                          <span className="text-slate-500">
+                            Waiting for response...
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
