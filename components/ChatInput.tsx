@@ -176,7 +176,7 @@ const ChatInput: React.FC = () => {
             <button
               type="button"
               onClick={handleClear}
-              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] bg-white/10 hover:bg-white/20 text-white border border-white/20"
+              className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition hover:opacity-90 shrink-0 mb-0 min-h-[44px] hover:bg-white/20 text-white" // bg-white/10  border border-white/20
               aria-label="Clear input and response"
             >
               <svg
@@ -198,7 +198,7 @@ const ChatInput: React.FC = () => {
               onClick={handleSend}
               disabled={loading || !input.trim()}
               className="rounded-r-2xl rounded-l-2xl py-5 px-5 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 shrink-0 mb-0 min-h-[44px]"
-              style={{ backgroundColor: "#1C4C9B" }}
+              // style={{ backgroundColor: "#1C4C9B" }}
               aria-label="Send message"
             >
               <svg
