@@ -36,44 +36,11 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="w-full mt-16">
+      <div className="w-full mb-5">
         <ChatInput />
       </div>
 
-      {/* Footer */}
-      <footer className="mt-12 md:mt-16 pb-6 text-center text-sm flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-        <span
-          className="inline-flex items-center gap-1.5"
-          style={{ color: "var(--accent)" }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="w-4 h-4 shrink-0"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          Powered by ChatGPT API
-        </span>
-        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>
-          •
-        </span>
-        <span style={{ color: "var(--foreground-subtle)" }}>Fast</span>
-        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>
-          •
-        </span>
-        <span style={{ color: "var(--foreground-subtle)" }}>Secure</span>
-        <span aria-hidden style={{ color: "var(--foreground-subtle)" }}>
-          •
-        </span>
-        <span style={{ color: "var(--foreground-subtle)" }}>Accurate</span>
-      </footer>
+    
     </div>
   );
 }

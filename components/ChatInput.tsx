@@ -17,6 +17,7 @@ const ChatInput: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [hasSent, setHasSent] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -66,6 +67,7 @@ const ChatInput: React.FC = () => {
       setError(e.message || "Something went wrong");
     } finally {
       setLoading(false);
+      setHasSent(true);
     }
   }, [input]);
 
@@ -80,6 +82,7 @@ const ChatInput: React.FC = () => {
     setInput("");
     setReply(null);
     setError(null);
+    setHasSent(false);
   }, []);
 
   const toggleRecording = () => {
@@ -132,6 +135,7 @@ const ChatInput: React.FC = () => {
     if (!value.trim() && (reply !== null || error !== null)) {
       setReply(null);
       setError(null);
+      setHasSent(false);
     }
   };
 
@@ -143,7 +147,7 @@ const ChatInput: React.FC = () => {
       <div className="flex flex-col gap-4">
         <div
           className="flex items-end rounded-2xl pl-3 pr-0 shadow-sm border border-white/11"
-          style={{ backgroundColor: "#072E6A" }}
+          style={{ backgroundColor: "#072E6A", alignItems: "center"}}
         >
           {/* Microphone */}
           <button
@@ -177,15 +181,15 @@ const ChatInput: React.FC = () => {
             ref={textareaRef}
             placeholder="Ask whatever you want"
             rows={MIN_LINES}
-            className="flex-1 min-h-[24px] max-h-[192px] bg-transparent outline-none text-white text-base py-3.5 pl-2 placeholder:text-[#A0AEC0] text-[20px] resize-none"
+            className="flex-1 min-h-[24px] max-h-[192px] bg-transparent outline-none text-base py-3.5 pl-2 placeholder: text-[20px] resize-none"
             style={{ color: "var(--foreground-subtle)" }}
             value={input}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
           />
 
-          {/* When there is text: show Delete (x); otherwise show Send */}
-          {hasText ? (
+          {/* After sending: show Delete (x); otherwise show Send */}
+          {hasSent && hasText ? (
             <button
               type="button"
               onClick={handleClear}
@@ -238,7 +242,7 @@ const ChatInput: React.FC = () => {
         className="min-h-[200px] lg:min-h-[280px] rounded-2xl p-5 shadow-lg border border-white/11"
         style={{
           backgroundColor: "#072E6A",
-          color: "var(--foreground-subtle)",
+          // color: "var(--foreground-subtle)",
         }}
       >
         <div className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll">
