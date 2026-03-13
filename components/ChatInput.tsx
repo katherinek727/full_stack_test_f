@@ -25,6 +25,7 @@ const ChatInput: React.FC = () => {
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const historyContainerRef = useRef<HTMLDivElement | null>(null);
 
   const adjustTextareaHeight = useCallback(() => {
     const ta = textareaRef.current;
@@ -45,6 +46,12 @@ const ChatInput: React.FC = () => {
   useEffect(() => {
     adjustTextareaHeight();
   }, [input, adjustTextareaHeight]);
+
+  useEffect(() => {
+    const container = historyContainerRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [history, loading]);
 
   const handleSend = useCallback(async () => {
     const trimmed = input.trim();
@@ -284,7 +291,10 @@ const ChatInput: React.FC = () => {
             </button>
           </div>
 
-          <div className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll">
+          <div
+            ref={historyContainerRef}
+            className="mr-0.5 pb-1 max-h-[235px] overflow-y-auto response-scroll"
+          >
             {history.length === 0 ? (
               <p
                 className="text-[15px] leading-relaxed"
